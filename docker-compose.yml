@@ -1,0 +1,61 @@
+version: "3.8"
+
+# networks:
+#   app-network:
+#     driver: "bridge"
+
+services:
+  nginx:
+    container_name: slimeweb
+    build:
+      context: .
+      dockerfile: nginx.dockerfile
+    ports:
+      - 80:80
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - timescale
+      - php
+
+  timescale:
+    container_name: slimescale
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: scrit
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ./postgres:/var/lib/postgresql
+  php:
+    container_name: slimeapp
+    build:
+      context: .
+      dockerfile: php.dockerfile
+      args:
+        user: adam
+        group: adam
+    volumes:
+      - ./src:/var/www/html
+
+    # user: "82:82"
+  composer:
+    container_name: slimecomposer
+    build:
+      context: .
+      dockerfile: composer.dockerfile
+    volumes:
+      - ./src:/var/www/html
+    working_dir: /var/www/html
+    logging:
+      driver: none
+
+  redis:
+    image: redis:alpine
+    container_name: slimecache
+    ports:
+      - "6382:6379"
+    # networks:
+    #   - app-network
