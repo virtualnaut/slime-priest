@@ -22,7 +22,7 @@ services:
     container_name: slimescale
     image: timescale/timescaledb:latest-pg14
     ports:
-      - 5432:5432
+      - 5433:5432
     environment:
       POSTGRES_DB: scrit
       POSTGRES_USER: laravel
@@ -57,5 +57,15 @@ services:
     container_name: slimecache
     ports:
       - "6382:6379"
+
+  python:
+    container_name: slimebot
+    build:
+      context: .
+      dockerfile: python.dockerfile
+    volumes:
+      - ./python:/bot
+    ports:
+      - 8080:80
     # networks:
     #   - app-network
