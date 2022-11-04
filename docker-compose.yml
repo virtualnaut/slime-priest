@@ -39,7 +39,6 @@ services:
         group: adam
     volumes:
       - ./src:/var/www/html
-
     # user: "82:82"
   composer:
     container_name: slimecomposer
@@ -66,6 +65,6 @@ services:
     volumes:
       - ./python:/bot
     ports:
-      - 8080:80
+      - 5000:5000
     # networks:
     #   - app-network

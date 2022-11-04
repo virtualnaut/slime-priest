@@ -1,25 +1,28 @@
-import os
-import discord
-from dotenv import load_dotenv
+from bot import Bot
+from flask import Flask, request
+import command_queue as q
 
-load_dotenv()
+bot = Bot()
 
-# Example bot from discord.py docs
-intents = discord.Intents.default()
-intents.message_content = True
+app = Flask(__name__)
 
-client = discord.Client(intents=intents)
 
-@client.event
-async def on_ready():
-    print(f'We have logged in as {client.user}')
+@app.route("/")
+def hello_world():
+    return "slime-preist (c) 2022 Adam Stamp"
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+@app.get('/status')
+async def status():
+    return {
+        'queue_length': bot.queue.length(),
+        'bot_up': bot.running
+    }
 
-client.run(os.getenv('BOT_KEY'))
+
+@app.post("/send")
+async def send():
+    body = request.get_json()
+    # await bot.send_to(body['channel_id'], body['message'])
+    bot.enqueue(q.SendCommand(body['message'], int(body['channel_id'])))
+    return '', 204
