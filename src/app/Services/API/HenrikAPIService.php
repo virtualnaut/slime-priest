@@ -37,6 +37,11 @@ class HenrikAPIService
         return $response->json();
     }
 
+    public function lastMatch(string $puuid)
+    {
+        return $this->matchHistory($puuid, 1)['History'][0]['MatchID'];
+    }
+
     /**
      * Get the details for a match.
      */

@@ -23,6 +23,5 @@ async def status():
 @app.post("/send")
 async def send():
     body = request.get_json()
-    # await bot.send_to(body['channel_id'], body['message'])
     bot.enqueue(q.SendCommand(body['message'], int(body['channel_id'])))
     return '', 204
