@@ -1,10 +1,14 @@
 from bot import Bot
 from flask import Flask, request
 import command_queue as q
+from discord import Embed
 
 bot = Bot()
 
 app = Flask(__name__)
+
+WIN_COLOUR = 0x16e5b4
+LOSE_COLOUR = 0xff4655
 
 
 @app.route("/")
@@ -23,5 +27,21 @@ async def status():
 @app.post("/send")
 async def send():
     body = request.get_json()
-    bot.enqueue(q.SendCommand(body['message'], int(body['channel_id'])))
+    bot.enqueue(q.SendTextCommand(body['message'], int(body['channel_id'])))
+    return '', 204
+
+
+@app.post('/send/embed/post-match')
+async def sendEmbedPostMatch():
+    body = request.get_json()
+    message = body['message']
+    was_win = message['our_score'] > message['their_score']
+
+    embed = Embed(title='Match Won' if was_win else 'Match Lost',
+                  colour=WIN_COLOUR if was_win else LOSE_COLOUR,
+                  description='{} / {} / {} mins'.format(message['map'], message['mode'], round(message['duration'] / 1000 / 60)))
+    embed.set_author(name='{} : {}'.format(
+        message['our_score'], message['their_score']))
+    embed.set_footer(text=message['server'])
+    bot.enqueue(q.SendEmbedCommand(embed, int(body['channel_id'])))
     return '', 204

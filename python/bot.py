@@ -31,8 +31,10 @@ class Bot:
             while not self.queue.empty():
                 item = self.queue.dequeue()
 
-                if (isinstance(item, q.SendCommand)):
+                if (isinstance(item, q.SendTextCommand)):
                     await self.client.get_channel(item.channel_id).send(item.message)
+                if (isinstance(item, q.SendEmbedCommand)):
+                    await self.client.get_channel(item.channel_id).send(embed=item.message)
 
         @self.client.event
         async def on_ready():

@@ -1,18 +1,28 @@
 from enum import Enum
+from discord import Embed
 
 
 class QueuedCommandCategory(Enum):
-    SEND = 0
+    SEND_TEXT = 0
+    SEND_EMBED = 1
 
 
 class AbstractQueuedCommand:
     category: QueuedCommandCategory
 
 
-class SendCommand(AbstractQueuedCommand):
-    category = QueuedCommandCategory.SEND
+class SendTextCommand(AbstractQueuedCommand):
+    category = QueuedCommandCategory.SEND_TEXT
 
     def __init__(self, message: str, channel_id: int):
+        self.message = message
+        self.channel_id = channel_id
+
+
+class SendEmbedCommand(AbstractQueuedCommand):
+    category = QueuedCommandCategory.SEND_EMBED
+
+    def __init__(self, message: Embed, channel_id: int):
         self.message = message
         self.channel_id = channel_id
 

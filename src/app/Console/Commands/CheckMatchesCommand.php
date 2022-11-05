@@ -24,8 +24,7 @@ class CheckMatchesCommand extends Command
             return Command::FAILURE;
         }
 
-        [$userName, $userTag] = Cache::get('tracking-user');
-        $lastMatch = $valorant->lastMatch($valorant->puuid($userName, $userTag));
+        $lastMatch = $valorant->lastMatch(Cache::get('tracking-user'));
 
         if (Cache::has('last-match-id')) {
             $oldLastMatch = Cache::get('last-match-id');
@@ -33,8 +32,8 @@ class CheckMatchesCommand extends Command
             if ($oldLastMatch !== $lastMatch) {
                 Cache::set('last-match-id', $lastMatch);
 
-                Log::info('Game `$lastMatch` just ended');
-                $bot->sendTo(env('DISCORD_OUTPUT_CHANNEL_ID'), "Game `$lastMatch` just ended");
+                Log::info('Match `$lastMatch` just ended');
+                $bot->sendPostMatchSummary(env('DISCORD_OUTPUT_CHANNEL_ID'), $lastMatch);
             } else {
                 Log::info('No match ended');
             }
