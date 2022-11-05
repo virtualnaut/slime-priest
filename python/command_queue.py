@@ -5,6 +5,7 @@ from discord import Embed
 class QueuedCommandCategory(Enum):
     SEND_TEXT = 0
     SEND_EMBED = 1
+    SEND_HTML = 2
 
 
 class AbstractQueuedCommand:
@@ -25,6 +26,17 @@ class SendEmbedCommand(AbstractQueuedCommand):
     def __init__(self, message: Embed, channel_id: int):
         self.message = message
         self.channel_id = channel_id
+
+
+class SendHTMLCommand(AbstractQueuedCommand):
+    category = QueuedCommandCategory.SEND_HTML
+
+    def __init__(self, url: str, channel_id: int, filename: str, image_format: str, loading_message: str):
+        self.url = url
+        self.channel_id = channel_id
+        self.filename = filename
+        self.format = image_format
+        self.loading_message = loading_message
 
 
 class Queue:

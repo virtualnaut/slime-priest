@@ -1,8 +1,12 @@
 import os
+import io
 from threading import Thread
+
+import imgkit
 import discord
 from dotenv import load_dotenv
 from discord.ext import tasks
+
 import command_queue as q
 
 load_dotenv()
@@ -35,6 +39,16 @@ class Bot:
                     await self.client.get_channel(item.channel_id).send(item.message)
                 if (isinstance(item, q.SendEmbedCommand)):
                     await self.client.get_channel(item.channel_id).send(embed=item.message)
+                if (isinstance(item, q.SendHTMLCommand)):
+                    message = await self.client.get_channel(item.channel_id).send(embed=discord.Embed(title=item.loading_message))
+
+                    file = discord.File(io.BytesIO(imgkit.from_url(
+                        item.url, False, {
+                            'format': item.format
+                        })), '{}.{}'.format(item.filename, item.format))
+
+                    await self.client.get_channel(item.channel_id).send(file=file)
+                    await message.delete()
 
         @self.client.event
         async def on_ready():

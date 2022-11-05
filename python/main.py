@@ -44,4 +44,14 @@ async def sendEmbedPostMatch():
         message['our_score'], message['their_score']))
     embed.set_footer(text=message['server'])
     bot.enqueue(q.SendEmbedCommand(embed, int(body['channel_id'])))
+
+    return '', 204
+
+
+@app.post('/send/html')
+async def sendHTML():
+    body = request.get_json()
+    bot.enqueue(q.SendHTMLCommand(body['message']['url'], body['channel_id'],
+                body['message']['filename'], body['message']['format'], body['message']['loading_message']))
+
     return '', 204
