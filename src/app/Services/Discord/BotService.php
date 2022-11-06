@@ -27,20 +27,13 @@ class BotService
 
     public function sendPostMatchSummary($channelID, $matchID)
     {
-        $matchDetails = $this->valorant->matchDetails($matchID)['data'];
-
-        $team = collect($matchDetails['players']['all_players'])->filter(fn ($player) => $player['puuid'] === TrackedPersonService::puuid())->first()['team'];
-
-        Http::post("{$this->baseURL}/send/embed/post-match", [
+        Http::post("{$this->baseURL}/send/html", [
             'channel_id' => $channelID,
             'message' => [
-                'mode' => $matchDetails['metadata']['mode'],
-                'start' => $matchDetails['metadata']['game_start'],
-                'duration' => $matchDetails['metadata']['game_length'],
-                'map' => $matchDetails['metadata']['map'],
-                'server' => $matchDetails['metadata']['cluster'],
-                'our_score' => $matchDetails['teams'][strtolower($team)]['rounds_won'],
-                'their_score' => $matchDetails['teams'][strtolower($team) === 'red' ? 'blue' : 'red']['rounds_won']
+                'loading_message' => 'Match ended, loading summary...',
+                'url' => "slimeweb/render/post-match/$matchID",
+                'filename' => 'summary',
+                'format' => 'png'
             ]
         ]);
     }
