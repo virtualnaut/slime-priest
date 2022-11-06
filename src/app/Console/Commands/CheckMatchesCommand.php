@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\API\HenrikAPIService;
 use App\Services\Discord\BotService;
+use App\Services\TrackedPersonService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -19,12 +20,12 @@ class CheckMatchesCommand extends Command
         $bot = new BotService();
         $valorant = new HenrikAPIService();
 
-        if (!Cache::has('tracking-user')) {
+        if (!TrackedPersonService::active()) {
             // No user is currently being tracked, so abort.
             return Command::FAILURE;
         }
 
-        $lastMatch = $valorant->lastMatch(Cache::get('tracking-user'));
+        $lastMatch = $valorant->lastMatch(TrackedPersonService::puuid());
 
         if (Cache::has('last-match-id')) {
             $oldLastMatch = Cache::get('last-match-id');

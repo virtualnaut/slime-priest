@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RenderController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +16,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::prefix('render')->group(function () {
+    Route::get('/post-match/{matchID}', [RenderController::class, 'postMatch']);
 });

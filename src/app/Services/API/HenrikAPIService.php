@@ -2,16 +2,15 @@
 
 namespace App\Services\API;
 
-use Illuminate\Support\Facades\Http;
 
-class HenrikAPIService
+class HenrikAPIService extends AbstractAPIService
 {
     /**
      * Get all of player's info by name and tag.
      */
     public function playerInfo(string $name, string $tag)
     {
-        $response = Http::get("https://api.henrikdev.xyz/valorant/v1/account/$name/$tag");
+        $response = $this->get("https://api.henrikdev.xyz/valorant/v1/account/$name/$tag");
         return $response->json();
     }
 
@@ -28,7 +27,7 @@ class HenrikAPIService
      */
     public function matchHistory(string $puuid, int $n)
     {
-        $response = Http::post('https://api.henrikdev.xyz/valorant/v1/raw', [
+        $response = $this->post('https://api.henrikdev.xyz/valorant/v1/raw', [
             'type' => 'matchhistory',
             'value' => $puuid,
             'region' => 'eu',
@@ -47,7 +46,7 @@ class HenrikAPIService
      */
     public function matchDetails(string $matchId)
     {
-        $response = Http::get("https://api.henrikdev.xyz/valorant/v2/match/$matchId");
+        $response = $this->get("https://api.henrikdev.xyz/valorant/v2/match/$matchId");
         return $response->json();
     }
 }

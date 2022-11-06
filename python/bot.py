@@ -43,8 +43,9 @@ class Bot:
                     message = await self.client.get_channel(item.channel_id).send(embed=discord.Embed(title=item.loading_message))
 
                     file = discord.File(io.BytesIO(imgkit.from_url(
-                        item.url, False, {
-                            'format': item.format
+                        item.url, False, options={
+                            'format': item.format,
+                            'width': 700
                         })), '{}.{}'.format(item.filename, item.format))
 
                     await self.client.get_channel(item.channel_id).send(file=file)

@@ -1,0 +1,37 @@
+@font-face {
+    font-family: Whitney;
+    font-weight: light;
+    src: url('/fonts/whitney-book.woff2');
+}
+
+@font-face {
+    font-family: Whitney;
+    font-weight: bold;
+    src: url('/fonts/whitney-semibold.woff2');
+}
+
+@font-face {
+    font-family: Whitney;
+    font-weight: normal;
+    src: url('/fonts/whitney-medium.woff2');
+}
+
+@font-face {
+    font-family: Inter;
+    src: url('/fonts/inter.ttf');
+}
+
+body {
+    background-color: #2f3136;
+    font-family: Whitney;
+    margin: 0;
+}
+
+h1,
+p {
+    color: #ffffff;
+}
+
+p {
+    font-weight: light;
+}

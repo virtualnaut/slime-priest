@@ -3,7 +3,7 @@
 namespace App\Services\Discord;
 
 use App\Services\API\HenrikAPIService;
-use Illuminate\Support\Facades\Cache;
+use App\Services\TrackedPersonService;
 use Illuminate\Support\Facades\Http;
 
 class BotService
@@ -29,7 +29,7 @@ class BotService
     {
         $matchDetails = $this->valorant->matchDetails($matchID)['data'];
 
-        $team = collect($matchDetails['players']['all_players'])->filter(fn ($player) => $player['puuid'] === Cache::get('tracking-user'))->first()['team'];
+        $team = collect($matchDetails['players']['all_players'])->filter(fn ($player) => $player['puuid'] === TrackedPersonService::puuid())->first()['team'];
 
         Http::post("{$this->baseURL}/send/embed/post-match", [
             'channel_id' => $channelID,
