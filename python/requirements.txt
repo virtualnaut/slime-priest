@@ -2,3 +2,4 @@ Flask[async]
 discord.py
 python-dotenv
 imgkit
+requests

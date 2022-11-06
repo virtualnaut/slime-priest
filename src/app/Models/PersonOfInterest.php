@@ -15,4 +15,9 @@ class PersonOfInterest extends Model
         'name',
         'tag',
     ];
+
+    public function discordUser()
+    {
+        return $this->hasOne(DiscordUser::class);
+    }
 }

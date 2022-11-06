@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DiscordUserController;
 use App\Http\Controllers\PeopleOfInterestController;
 use App\Http\Controllers\TrackingController;
 use Illuminate\Http\Request;
@@ -20,11 +21,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/discord/user/{userID}', [DiscordUserController::class, 'show']);
 
 Route::prefix('poi')->group(function () {
     Route::post('/tracking/{user}/{tag}', [TrackingController::class, 'set']);
     Route::get('/tracking', [TrackingController::class, 'get']);
     Route::delete('/tracking', [TrackingController::class, 'destroy']);
 
-    Route::post('/create', [PeopleOfInterestController::class, 'create']);
+    Route::post('/', [PeopleOfInterestController::class, 'create']);
+    Route::delete('/destroy/{user}/{tag}', [PeopleOfInterestController::class, 'destroy']);
 });
