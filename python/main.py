@@ -13,7 +13,7 @@ LOSE_COLOUR = 0xff4655
 
 @app.route("/")
 def hello_world():
-    return "slime-preist (c) 2022 Adam Stamp"
+    return "slime-priest (c) 2022 Adam Stamp"
 
 
 @app.get('/status')
