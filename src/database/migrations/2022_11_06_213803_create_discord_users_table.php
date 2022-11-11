@@ -22,7 +22,10 @@ class CreateDiscordUsersTable extends Migration
             $table->timestamps();
 
             $table->index('person_of_interest_id');
-            $table->foreign('person_of_interest_id')->references('id')->on('people_of_interest')->onDelete('restrict');
+            $table->foreign('person_of_interest_id')
+                ->references('id')
+                ->on('people_of_interest')
+                ->onDelete('SET NULL');
         });
     }
 

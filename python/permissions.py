@@ -28,7 +28,7 @@ def get_commands(user):
     if response.status_code == 200:
         return roles[response.json()['role']]
     else:
-        return roles[Role.User]
+        return roles[Role.User.value]
 
 
 def has_permission(user, command):
