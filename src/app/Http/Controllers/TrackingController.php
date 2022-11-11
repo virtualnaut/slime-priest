@@ -19,8 +19,6 @@ class TrackingController extends Controller
     {
         TrackedPersonService::set(PersonOfInterest::where('name', '=', $user)->where('tag', '=', $tag)->firstOrFail());
 
-        // Cache::put('tracking-user', $this->valorant->puuid($user, $tag));
-
         return response('', 204);
     }
 

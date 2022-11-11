@@ -14,6 +14,7 @@ class TrackedPersonService
     public static function set(PersonOfInterest $person)
     {
         self::turn_off();
+        $person = $person->fresh();
         $person->is_tracking = true;
         $person->save();
     }
