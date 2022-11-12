@@ -117,94 +117,103 @@ class Bot:
         if command[0] in [command.value for command in Command] and has_permission(message.author.id, command[0]):
 
             if command[0] == Command.Help.value:
-                commands = get_commands(message.author.id)
-
-                description = ''
-
-                for command in commands:
-                    description += '`' + \
-                        COMMAND_USAGES[command] + '`: ' + \
-                        COMMAND_DESCRIPTIONS[command] + '\n\n'
-
-                await message.channel.send(embed=discord.Embed(title='Available Commands', description=description))
-
+                await self.do_help_command(message, command)
             if command[0] == Command.Track.value:
-                if not len(command) >= 2:
-                    await self.send_embed(message.channel, 'No player was given', Level.Error)
-                    return
-
-                player = command[1].split('#')
-
-                if not len(player) == 2:
-                    await self.send_embed(message.channel, 'Invalid player', Level.Error)
-                    return
-
-                response = requests.post(
-                    f'http://slimeweb/api/poi/tracking/{player[0]}/{player[1]}')
-
-                if response.status_code >= 200 and response.status_code < 300:
-                    if response.json()['changed']:
-                        await self.send_embed(
-                            message.channel, f'Tracked player set to `{command[1]}`', Level.Success)
-                    else:
-                        await self.send_embed(
-                            message.channel, f'`{command[1]}` is already being tracked', Level.Warn)
-                else:
-                    if '-v' in command:
-                        await self.send_embed(message.channel, f'There was a problem finding player `{command[1]}`', Level.Error, f'```Code: {str(response.status_code)}```')
-                    else:
-                        await self.send_embed(message.channel, f'There was a problem finding player `{command[1]}`', Level.Error)
-
+                await self.do_track_command(message, command)
             if command[0] == Command.Untrack.value:
-                response = requests.delete('http://slimeweb/api/poi/tracking')
-
-                if response.status_code >= 200 and response.status_code < 300:
-                    await self.send_embed(message.channel, f'Tracking is disabled', Level.Success)
-                else:
-                    if '-v' in command:
-                        await self.send_embed(message.channel, 'Problem while trying to disable tracking', Level.Error, f'```Code: {str(response.status_code)}```')
-                    else:
-                        await self.send_embed(message.channel, 'Problem while trying to disable tracking', Level.Error)
-
+                await self.do_untrack_command(message, command)
             if command[0] == Command.PersonOfInterest.value:
-                if not len(command) >= 3 or command[1] not in ['add', 'remove']:
-                    await self.send_embed(message.channel, 'Can\'t read command\nUsage: `~poi add|remove <player name>#<player tagline>`', Level.Error)
-                    return
-
-                player = command[2].split('#')
-
-                if not len(player) == 2:
-                    await self.send_embed(message.channel, 'Invalid player', Level.Error)
-                    return
-
-                if command[1] == 'add':
-                    response = requests.post(
-                        f'http://slimeweb/api/poi', json={'name': player[0], 'tag': player[1]})
-
-                    feedback = f'Created new person of interest `{command[2]}`'
-
-                elif command[1] == 'remove':
-                    response = requests.delete(
-                        f'http://slimeweb/api/poi/destroy/{player[0]}/{player[1]}')
-
-                    feedback = f'Removed person of interest `{command[2]}`'
-
-                if response.status_code >= 200 and response.status_code < 300:
-                    await self.send_embed(message.channel, feedback, Level.Success)
-                else:
-
-                    if response.status_code == 409:
-                        feedback = f'Player `{command[2]}` is already of interest'
-                    else:
-                        feedback = f'There was a problem finding player `{command[2]}`'
-
-                    if '-v' in command:
-                        await self.send_embed(message.channel, feedback, Level.Error, f'```Code: {str(response.status_code)}```')
-                    else:
-                        await self.send_embed(message.channel, feedback, Level.Error)
+                await self.do_poi_command(message, command)
         else:
             await self.send_embed(
                 message.channel, 'You don\'t have permission to use that!', Level.Error)
 
     async def send_embed(self, channel: discord.TextChannel, content: str, level: Level, description=None):
         await channel.send(embed=discord.Embed(title=content, colour=EMBED_COLOURS[level], description=description))
+
+    async def do_help_command(self, message: discord.Message, args: list):
+        commands = get_commands(message.author.id)
+
+        description = ''
+
+        for command in commands:
+            description += '`' + \
+                COMMAND_USAGES[command] + '`: ' + \
+                COMMAND_DESCRIPTIONS[command] + '\n\n'
+
+        await message.channel.send(embed=discord.Embed(title='Available Commands', description=description))
+
+    async def do_track_command(self, message: discord.Message, args: list):
+        if not len(args) >= 2:
+            await self.send_embed(message.channel, 'No player was given', Level.Error)
+            return
+
+        player = args[1].split('#')
+
+        if not len(player) == 2:
+            await self.send_embed(message.channel, 'Invalid player', Level.Error)
+            return
+
+        response = requests.post(
+            f'http://slimeweb/api/poi/tracking/{player[0]}/{player[1]}')
+
+        if response.status_code >= 200 and response.status_code < 300:
+            if response.json()['changed']:
+                await self.send_embed(
+                    message.channel, f'Tracked player set to `{args[1]}`', Level.Success)
+            else:
+                await self.send_embed(
+                    message.channel, f'`{args[1]}` is already being tracked', Level.Warn)
+        else:
+            if '-v' in args:
+                await self.send_embed(message.channel, f'There was a problem finding player `{args[1]}`', Level.Error, f'```Code: {str(response.status_code)}```')
+            else:
+                await self.send_embed(message.channel, f'There was a problem finding player `{args[1]}`', Level.Error)
+
+    async def do_untrack_command(self, message: discord.Message, args: list):
+        response = requests.delete('http://slimeweb/api/poi/tracking')
+
+        if response.status_code >= 200 and response.status_code < 300:
+            await self.send_embed(message.channel, f'Tracking is disabled', Level.Success)
+        else:
+            if '-v' in args:
+                await self.send_embed(message.channel, 'Problem while trying to disable tracking', Level.Error, f'```Code: {str(response.status_code)}```')
+            else:
+                await self.send_embed(message.channel, 'Problem while trying to disable tracking', Level.Error)
+
+    async def do_poi_command(self, message: discord.Message, args: list):
+        if not len(args) >= 3 or args[1] not in ['add', 'remove']:
+            await self.send_embed(message.channel, 'Can\'t read args\nUsage: `~poi add|remove <player name>#<player tagline>`', Level.Error)
+            return
+
+        player = args[2].split('#')
+
+        if not len(player) == 2:
+            await self.send_embed(message.channel, 'Invalid player', Level.Error)
+            return
+
+        if args[1] == 'add':
+            response = requests.post(
+                f'http://slimeweb/api/poi', json={'name': player[0], 'tag': player[1]})
+
+            feedback = f'Created new person of interest `{args[2]}`'
+
+        elif args[1] == 'remove':
+            response = requests.delete(
+                f'http://slimeweb/api/poi/destroy/{player[0]}/{player[1]}')
+
+            feedback = f'Removed person of interest `{args[2]}`'
+
+        if response.status_code >= 200 and response.status_code < 300:
+            await self.send_embed(message.channel, feedback, Level.Success)
+        else:
+
+            if response.status_code == 409:
+                feedback = f'Player `{args[2]}` is already of interest'
+            else:
+                feedback = f'There was a problem finding player `{args[2]}`'
+
+            if '-v' in args:
+                await self.send_embed(message.channel, feedback, Level.Error, f'```Code: {str(response.status_code)}```')
+            else:
+                await self.send_embed(message.channel, feedback, Level.Error)
