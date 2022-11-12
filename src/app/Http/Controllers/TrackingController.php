@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\PersonOfInterest;
 use App\Services\API\HenrikAPIService;
 use App\Services\TrackedPersonService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class TrackingController extends Controller
 {
@@ -17,9 +15,11 @@ class TrackingController extends Controller
 
     public function set($user, $tag)
     {
-        TrackedPersonService::set(PersonOfInterest::where('name', '=', $user)->where('tag', '=', $tag)->firstOrFail());
+        $changed = TrackedPersonService::set(PersonOfInterest::where('name', '=', $user)->where('tag', '=', $tag)->firstOrFail());
 
-        return response('', 204);
+        return response([
+            'changed' => $changed
+        ], 200);
     }
 
     public function get()

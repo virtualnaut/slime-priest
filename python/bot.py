@@ -143,7 +143,12 @@ class Bot:
                     f'http://slimeweb/api/poi/tracking/{player[0]}/{player[1]}')
 
                 if response.status_code >= 200 and response.status_code < 300:
-                    await self.send_embed(message.channel, f'Tracked player set to `{command[1]}`', Level.Success)
+                    if response.json()['changed']:
+                        await self.send_embed(
+                            message.channel, f'Tracked player set to `{command[1]}`', Level.Success)
+                    else:
+                        await self.send_embed(
+                            message.channel, f'`{command[1]}` is already being tracked', Level.Warn)
                 else:
                     if '-v' in command:
                         await self.send_embed(message.channel, f'There was a problem finding player `{command[1]}`', Level.Error, f'```Code: {str(response.status_code)}```')

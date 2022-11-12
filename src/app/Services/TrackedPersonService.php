@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\PersonOfInterest;
+use Illuminate\Support\Facades\Cache;
 
 class TrackedPersonService
 {
@@ -11,12 +12,22 @@ class TrackedPersonService
         return PersonOfInterest::where('is_tracking', '=', true)->first() ?? null;
     }
 
-    public static function set(PersonOfInterest $person)
+    public static function set(PersonOfInterest $person): bool
     {
+        if ($person->is_tracking) {
+            return false;
+        }
+
         self::turn_off();
+
         $person = $person->fresh();
         $person->is_tracking = true;
         $person->save();
+
+        // Clear the cache if the tracked user has actually changed.
+        Cache::forget('last-match-id');
+
+        return true;
     }
 
     public static function turn_off()
