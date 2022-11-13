@@ -27,7 +27,9 @@ Route::prefix('poi')->group(function () {
     Route::post('/tracking/{user}/{tag}', [TrackingController::class, 'set']);
     Route::get('/tracking', [TrackingController::class, 'get']);
     Route::delete('/tracking', [TrackingController::class, 'destroy']);
+    Route::get('/tracking/status', [TrackingController::class, 'status']);
 
+    Route::get('/', [PeopleOfInterestController::class, 'index']);
     Route::post('/', [PeopleOfInterestController::class, 'create']);
     Route::delete('/destroy/{user}/{tag}', [PeopleOfInterestController::class, 'destroy']);
 });

@@ -13,6 +13,11 @@ class PeopleOfInterestController extends Controller
         $this->valorant = new HenrikAPIService();
     }
 
+    public function index()
+    {
+        return PersonOfInterest::all();
+    }
+
     public function create(Request $request)
     {
 

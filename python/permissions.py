@@ -1,12 +1,21 @@
 from enum import Enum
 import requests
 
+from typing import Optional
+
 
 class Command(Enum):
     Help = 'help'
     Track = 'track'
     Untrack = 'untrack'
     PersonOfInterest = 'poi'
+    Status = 'status'
+
+
+class SubCommand(Enum):
+    Add = 'add'
+    Remove = 'remove'
+    List = 'list'
 
 
 class Role(Enum):
@@ -16,9 +25,10 @@ class Role(Enum):
 
 
 roles = {
-    Role.Admin.value: [Command.Help, Command.Track, Command.Untrack, Command.PersonOfInterest],
-    Role.Trusted.value: [Command.Help, Command.Track, Command.Untrack, Command.PersonOfInterest],
-    Role.User.value: [Command.Help]
+    Role.Admin.value: [Command.Help, Command.Track, Command.Untrack, Command.PersonOfInterest, Command.Status],
+    Role.Trusted.value: [Command.Help, Command.Track, Command.Untrack, (Command.PersonOfInterest, [SubCommand.Add, SubCommand.List])],
+    Role.User.value: [Command.Help,
+                      (Command.PersonOfInterest, [SubCommand.List])]
 }
 
 
@@ -32,4 +42,23 @@ def get_commands(user):
 
 
 def has_permission(user, command):
-    return command in [c.value for c in get_commands(user)]
+    allowed = False
+    for permissible in get_commands(user):
+        if type(permissible) == Command:
+            if command[0] == permissible.value:
+                allowed = True
+                break
+
+        elif type(permissible) == tuple:
+            if command[0] == permissible[0].value and len(command) > 1 in [sub.value for sub in permissible[1]]:
+                allowed = True
+                break
+
+    return allowed
+
+
+def command_is(requested: list[str], command: Command, sub_command: Optional[SubCommand] = None):
+    if sub_command:
+        return requested[0] == command.value and requested[1] and requested[1] == sub_command.value
+
+    return requested[0] == command.value

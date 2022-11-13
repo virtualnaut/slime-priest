@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from discord.ext import tasks
 
 import command_queue as q
-from permissions import Command, has_permission, get_commands
+from permissions import Command, SubCommand, has_permission, get_commands, command_is
 from log import log
 
 
@@ -30,14 +30,18 @@ COMMAND_USAGES = {
     Command.Help: f'~{Command.Help.value}',
     Command.Track: f'~{Command.Track.value} <player name>#<player tagline>',
     Command.Untrack: f'~{Command.Untrack.value}',
-    Command.PersonOfInterest: f'~{Command.PersonOfInterest.value} add|remove <player name>#<player tagline>'
+    Command.PersonOfInterest: [
+        f'~{Command.PersonOfInterest.value} add|remove <player name>#<player tagline>', f'~{Command.PersonOfInterest.value} list'],
+    Command.Status: f'~{Command.Status.value}'
 }
 
 COMMAND_DESCRIPTIONS = {
     Command.Help: 'Display this help message',
     Command.Track: 'Change the user to check games for',
     Command.Untrack: 'Disable tracking',
-    Command.PersonOfInterest: 'Add a person to include in stats'
+    Command.PersonOfInterest: [
+        'Add or remove a person to include in stats', 'List the current people of interest'],
+    Command.Status: 'Get the tracking status'
 }
 
 
@@ -114,16 +118,21 @@ class Bot:
     async def handle_user_command(self, message: discord.Message):
         command = message.content[1:].split(' ')
 
-        if command[0] in [command.value for command in Command] and has_permission(message.author.id, command[0]):
+        if command[0] in [command.value for command in Command] and has_permission(message.author.id, command):
 
-            if command[0] == Command.Help.value:
+            if command_is(command, Command.Help):
                 await self.do_help_command(message, command)
-            if command[0] == Command.Track.value:
+            elif command_is(command, Command.Track):
                 await self.do_track_command(message, command)
-            if command[0] == Command.Untrack.value:
+            elif command_is(command, Command.Untrack):
                 await self.do_untrack_command(message, command)
-            if command[0] == Command.PersonOfInterest.value:
+            elif command_is(command, Command.PersonOfInterest, SubCommand.List):
+                await self.do_poi_list_command(message, command)
+            elif command_is(command, Command.PersonOfInterest):
                 await self.do_poi_command(message, command)
+            elif command_is(command, Command.Status):
+                await self.do_status_command(message, command)
+
         else:
             await self.send_embed(
                 message.channel, 'You don\'t have permission to use that!', Level.Error)
@@ -137,9 +146,18 @@ class Bot:
         description = ''
 
         for command in commands:
-            description += '`' + \
-                COMMAND_USAGES[command] + '`: ' + \
-                COMMAND_DESCRIPTIONS[command] + '\n\n'
+            base_command = command if type(command) == Command else command[0]
+            usages = COMMAND_USAGES[base_command]
+
+            if type(usages) == list:
+                for entry in range(len(usages)):
+                    description += '`' + \
+                        COMMAND_USAGES[base_command][entry] + '`: ' + \
+                        COMMAND_DESCRIPTIONS[base_command][entry] + '\n\n'
+            elif type(usages) == str:
+                description += '`' + \
+                    COMMAND_USAGES[base_command] + '`: ' + \
+                    COMMAND_DESCRIPTIONS[base_command] + '\n\n'
 
         await message.channel.send(embed=discord.Embed(title='Available Commands', description=description))
 
@@ -165,21 +183,23 @@ class Bot:
                 await self.send_embed(
                     message.channel, f'`{args[1]}` is already being tracked', Level.Warn)
         else:
-            if '-v' in args:
-                await self.send_embed(message.channel, f'There was a problem finding player `{args[1]}`', Level.Error, f'```Code: {str(response.status_code)}```')
-            else:
-                await self.send_embed(message.channel, f'There was a problem finding player `{args[1]}`', Level.Error)
+            await self.send_embed(
+                message.channel,
+                f'There was a problem finding player `{args[1]}`',
+                Level.Error,
+                f'```Code: {str(response.status_code)}```' if '-v' in args else None)
 
     async def do_untrack_command(self, message: discord.Message, args: list):
         response = requests.delete('http://slimeweb/api/poi/tracking')
 
         if response.status_code >= 200 and response.status_code < 300:
-            await self.send_embed(message.channel, f'Tracking is disabled', Level.Success)
+            await self.send_embed(message.channel, f'Tracking has been disabled', Level.Success)
         else:
-            if '-v' in args:
-                await self.send_embed(message.channel, 'Problem while trying to disable tracking', Level.Error, f'```Code: {str(response.status_code)}```')
-            else:
-                await self.send_embed(message.channel, 'Problem while trying to disable tracking', Level.Error)
+            await self.send_embed(
+                message.channel,
+                'Problem while trying to disable tracking',
+                Level.Error,
+                f'```Code: {str(response.status_code)}```' if '-v' in args else None)
 
     async def do_poi_command(self, message: discord.Message, args: list):
         if not len(args) >= 3 or args[1] not in ['add', 'remove']:
@@ -213,7 +233,62 @@ class Bot:
             else:
                 feedback = f'There was a problem finding player `{args[2]}`'
 
-            if '-v' in args:
-                await self.send_embed(message.channel, feedback, Level.Error, f'```Code: {str(response.status_code)}```')
+            await self.send_embed(
+                message.channel,
+                feedback,
+                Level.Error,
+                f'```Code: {str(response.status_code)}```' if '-v' in args else None)
+
+    async def do_poi_list_command(self, message: discord.Message, args: list):
+
+        response = requests.get(f'http://slimeweb/api/poi')
+
+        if response.status_code >= 200 and response.status_code < 300:
+            content = ''
+            people = sorted(response.json(), key=lambda person: person['name'])
+            for person in people:
+                content += (':green_circle:' if person['is_tracking'] else ':red_circle:') \
+                    + ' {} `#{}`\n'.format(person['name'], person['tag'])
+
+            await self.send_embed(
+                message.channel,
+                'People of Interest',
+                Level.Success,
+                content)
+        else:
+            await self.send_embed(
+                message.channel,
+                'There was a problem getting the list of people of interest',
+                Level.Error,
+                f'```Code: {str(response.status_code)}```' if '-v' in args else None)
+
+    async def do_status_command(self, message: discord.Message, args: list):
+        response = requests.get(f'http://slimeweb/api/poi/tracking/status')
+
+        if response.status_code >= 200 and response.status_code < 300:
+            content = response.json()
+            status = content['status']
+
+            if (status == 'active'):
+                tracking_value = ':green_circle: Active'
+            elif (status == 'idle'):
+                tracking_value = ':orange_circle: Idle'
+            elif (status == 'offline'):
+                tracking_value = ':red_circle: Offline'
             else:
-                await self.send_embed(message.channel, feedback, Level.Error)
+                tracking_value = ':grey_question: Unknown'
+
+            embed = discord.Embed(
+                title='Status', color=EMBED_COLOURS[Level.Success])
+            embed.add_field(name='Tracking Status', value=tracking_value)
+            embed.add_field(name='Tracked User', value=content['tracked_person']['name'] +
+                            ' `#' + content['tracked_person']['tag'] + '`' if content['tracked_person'] else ':x:')
+
+            await message.channel.send(embed=embed)
+        else:
+            await self.send_embed(
+                message.channel,
+                'There was a problem getting the status',
+                Level.Error,
+                f'```Code: {str(response.status_code)}```' if '-v' in args else None)
+        # await self.send_embed(message.channel, 'HELLO', Level.Error)
