@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiscordUser;
 use App\Models\PersonOfInterest;
 use App\Services\API\HenrikAPIService;
 use App\Services\TrackedPersonService;
@@ -19,10 +20,23 @@ class TrackingController extends Controller
 
     public function set($user, $tag)
     {
-        $changed = TrackedPersonService::set(PersonOfInterest::where('name', '=', $user)->where('tag', '=', $tag)->firstOrFail());
+        $person = PersonOfInterest::where('name', '=', $user)->where('tag', '=', $tag)->firstOrFail();
+        $changed = TrackedPersonService::set($person);
 
         return response([
-            'changed' => $changed
+            'changed' => $changed,
+            'person' => $person
+        ], 200);
+    }
+
+    public function setByDiscordID($discordID)
+    {
+        $person = DiscordUser::where('discord_id', $discordID)->firstOrFail()->personOfInterest;
+        $changed = TrackedPersonService::set($person);
+
+        return response([
+            'changed' => $changed,
+            'person' => $person
         ], 200);
     }
 

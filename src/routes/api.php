@@ -25,6 +25,7 @@ Route::get('/discord/user/{userID}', [DiscordUserController::class, 'show']);
 
 Route::prefix('poi')->group(function () {
     Route::post('/tracking/{user}/{tag}', [TrackingController::class, 'set']);
+    Route::post('/tracking/{discordID}', [TrackingController::class, 'setByDiscordID']);
     Route::get('/tracking', [TrackingController::class, 'get']);
     Route::delete('/tracking', [TrackingController::class, 'destroy']);
     Route::get('/tracking/status', [TrackingController::class, 'status']);

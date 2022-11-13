@@ -1,11 +1,12 @@
 import os
 import io
-import requests
+import re
 from enum import Enum
 from threading import Thread
 
 import imgkit
 import discord
+import requests
 from dotenv import load_dotenv
 from discord.ext import tasks
 
@@ -162,26 +163,39 @@ class Bot:
         await message.channel.send(embed=discord.Embed(title='Available Commands', description=description))
 
     async def do_track_command(self, message: discord.Message, args: list):
-        if not len(args) >= 2:
-            await self.send_embed(message.channel, 'No player was given', Level.Error)
-            return
+        if (len(args) == 1):
+            # Should be syntax ~track
 
-        player = args[1].split('#')
+            response = requests.post(
+                f'http://slimeweb/api/poi/tracking/{message.author.id}')
 
-        if not len(player) == 2:
-            await self.send_embed(message.channel, 'Invalid player', Level.Error)
-            return
+        if (len(args) == 2):
+            # Should be syntax ~track NAME#TAG
+            # or ~track DISCORD_ID
 
-        response = requests.post(
-            f'http://slimeweb/api/poi/tracking/{player[0]}/{player[1]}')
+            player = args[1].split('#')
+
+            if len(player) == 2:
+                response = requests.post(
+                    f'http://slimeweb/api/poi/tracking/{player[0]}/{player[1]}')
+
+            elif len(player) == 1 and re.match('^\d+$', player[0][2:-1]):
+                response = requests.post(
+                    f'http://slimeweb/api/poi/tracking/{player[0][2:-1]}')
+            else:
+                await self.send_embed(message.channel, 'Invalid player', Level.Error)
+                return
 
         if response.status_code >= 200 and response.status_code < 300:
-            if response.json()['changed']:
+
+            response_content = response.json()
+
+            if response_content['changed']:
                 await self.send_embed(
-                    message.channel, f'Tracked player set to `{args[1]}`', Level.Success)
+                    message.channel, 'Tracked player set to `{}#{}`'.format(response_content['person']['name'], response_content['person']['tag']), Level.Success)
             else:
                 await self.send_embed(
-                    message.channel, f'`{args[1]}` is already being tracked', Level.Warn)
+                    message.channel, '`{}#{}` is already being tracked'.format(response_content['person']['name'], response_content['person']['tag']), Level.Warn)
         else:
             await self.send_embed(
                 message.channel,
