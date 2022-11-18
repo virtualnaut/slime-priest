@@ -33,7 +33,8 @@ COMMAND_USAGES = {
     Command.Untrack: f'~{Command.Untrack.value}',
     Command.PersonOfInterest: [
         f'~{Command.PersonOfInterest.value} add|remove <player name>#<player tagline>', f'~{Command.PersonOfInterest.value} list'],
-    Command.Status: f'~{Command.Status.value}'
+    Command.Status: f'~{Command.Status.value}',
+    Command.Resend: f'~{Command.Resend.value}'
 }
 
 COMMAND_DESCRIPTIONS = {
@@ -42,7 +43,8 @@ COMMAND_DESCRIPTIONS = {
     Command.Untrack: 'Disable tracking',
     Command.PersonOfInterest: [
         'Add or remove a person to include in stats', 'List the current people of interest'],
-    Command.Status: 'Get the tracking status'
+    Command.Status: 'Get the tracking status',
+    Command.Resend: 'Resend the summary for the last match.'
 }
 
 
@@ -133,6 +135,8 @@ class Bot:
                 await self.do_poi_command(message, command)
             elif command_is(command, Command.Status):
                 await self.do_status_command(message, command)
+            elif command_is(command, Command.Resend):
+                await self.do_resend_command(message, command)
 
         else:
             await self.send_embed(
@@ -164,8 +168,6 @@ class Bot:
 
     async def do_track_command(self, message: discord.Message, args: list):
         if (len(args) == 1):
-            # Should be syntax ~track
-
             response = requests.post(
                 f'http://slimeweb/api/poi/tracking/{message.author.id}')
 
@@ -305,4 +307,11 @@ class Bot:
                 'There was a problem getting the status',
                 Level.Error,
                 f'```Code: {str(response.status_code)}```' if '-v' in args else None)
-        # await self.send_embed(message.channel, 'HELLO', Level.Error)
+
+    async def do_resend_command(self, message: discord.Message, command: list):
+
+        response = requests.get('http://slimeweb/api/bot/resend')
+
+        if response.status_code < 200 or response.status_code >= 300:
+            self.send_embed(
+                message.channel, 'There was a problem resending the match summary', Level.Error)

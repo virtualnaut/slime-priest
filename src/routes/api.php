@@ -34,3 +34,5 @@ Route::prefix('poi')->group(function () {
     Route::post('/', [PeopleOfInterestController::class, 'create']);
     Route::delete('/destroy/{user}/{tag}', [PeopleOfInterestController::class, 'destroy']);
 });
+
+Route::get('/bot/resend', [BotController::class, 'resend']);

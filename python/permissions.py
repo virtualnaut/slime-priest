@@ -10,6 +10,7 @@ class Command(Enum):
     Untrack = 'untrack'
     PersonOfInterest = 'poi'
     Status = 'status'
+    Resend = 'resend'
 
 
 class SubCommand(Enum):
@@ -25,10 +26,25 @@ class Role(Enum):
 
 
 roles = {
-    Role.Admin.value: [Command.Help, Command.Track, Command.Untrack, Command.PersonOfInterest, Command.Status],
-    Role.Trusted.value: [Command.Help, Command.Track, Command.Untrack, (Command.PersonOfInterest, [SubCommand.Add, SubCommand.List])],
-    Role.User.value: [Command.Help,
-                      (Command.PersonOfInterest, [SubCommand.List])]
+    Role.Admin.value: [
+        Command.Help,
+        Command.Track,
+        Command.Untrack,
+        Command.PersonOfInterest,
+        Command.Status,
+        Command.Resend
+    ],
+    Role.Trusted.value: [
+        Command.Help,
+        Command.Track,
+        Command.Untrack,
+        (Command.PersonOfInterest, [SubCommand.Add, SubCommand.List]),
+        Command.Resend
+    ],
+    Role.User.value: [
+        Command.Help,
+        (Command.PersonOfInterest, [SubCommand.List])
+    ]
 }
 
 

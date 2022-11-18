@@ -3,7 +3,7 @@
 namespace App\Services\Discord;
 
 use App\Services\API\HenrikAPIService;
-use App\Services\TrackedPersonService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class BotService
@@ -36,6 +36,11 @@ class BotService
                 'format' => 'png'
             ]
         ]);
+    }
+
+    public function sendLastMatchSummary($channelID)
+    {
+        $this->sendPostMatchSummary($channelID, Cache::get('last-match-id'));
     }
 
     public function status()
