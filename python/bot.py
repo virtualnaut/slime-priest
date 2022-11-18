@@ -81,11 +81,16 @@ class Bot:
                 if (isinstance(item, q.SendHTMLCommand)):
                     message = await self.client.get_channel(item.channel_id).send(embed=discord.Embed(title=item.loading_message))
 
-                    file = discord.File(io.BytesIO(imgkit.from_url(
-                        item.url, False, options={
-                            'format': item.format,
-                            'width': 700
-                        })), '{}.{}'.format(item.filename, item.format))
+                    try:
+                        file = discord.File(io.BytesIO(imgkit.from_url(
+                            item.url, False, options={
+                                'format': item.format,
+                                'width': 700
+                            })), '{}.{}'.format(item.filename, item.format))
+                    except OSError:
+                        log('ERROR')
+                        await message.delete()
+                        await self.client.get_channel(item.channel_id).send(embed=discord.Embed(title=item.error_message, colour=EMBED_COLOURS[Level.Error]))
 
                     await self.client.get_channel(item.channel_id).send(file=file)
                     await message.delete()

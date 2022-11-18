@@ -52,6 +52,6 @@ async def sendEmbedPostMatch():
 async def sendHTML():
     body = request.get_json()
     bot.enqueue(q.SendHTMLCommand(body['message']['url'], int(body['channel_id']),
-                body['message']['filename'], body['message']['format'], body['message']['loading_message']))
+                body['message']['filename'], body['message']['format'], body['message']['loading_message'], body['message']['error_message']))
 
     return '', 204

@@ -31,12 +31,13 @@ class SendEmbedCommand(AbstractQueuedCommand):
 class SendHTMLCommand(AbstractQueuedCommand):
     category = QueuedCommandCategory.SEND_HTML
 
-    def __init__(self, url: str, channel_id: int, filename: str, image_format: str, loading_message: str):
+    def __init__(self, url: str, channel_id: int, filename: str, image_format: str, loading_message: str, error_message: str):
         self.url = url
         self.channel_id = channel_id
         self.filename = filename
         self.format = image_format
         self.loading_message = loading_message
+        self.error_message = error_message
 
 
 class Queue:
