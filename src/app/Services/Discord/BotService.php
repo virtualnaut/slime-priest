@@ -31,6 +31,7 @@ class BotService
             'channel_id' => $channelID,
             'message' => [
                 'loading_message' => 'Match ended, loading summary...',
+                'error_message' => 'Failed to load match summary',
                 'url' => "slimeweb/render/post-match/$matchID",
                 'filename' => 'summary',
                 'format' => 'png'
