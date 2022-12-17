@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 class DiscordServiceProvider extends ServiceProvider
 {
-    // public $singletons = [
-    //     BotService::class
-    // ];
+    public $singletons = [
+        BotService::class
+    ];
 }

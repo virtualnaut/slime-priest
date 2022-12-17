@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BotController;
 use App\Http\Controllers\DiscordUserController;
 use App\Http\Controllers\PeopleOfInterestController;
 use App\Http\Controllers\TrackingController;

@@ -318,5 +318,5 @@ class Bot:
         response = requests.get('http://slimeweb/api/bot/resend')
 
         if response.status_code < 200 or response.status_code >= 300:
-            self.send_embed(
+            await self.send_embed(
                 message.channel, 'There was a problem resending the match summary', Level.Error)
